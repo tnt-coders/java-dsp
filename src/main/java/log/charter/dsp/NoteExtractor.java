@@ -62,12 +62,13 @@ public class NoteExtractor {
 		return this.frequencyBins;
 	}
 	
-	// Multiply by 2 because the output is complex and takes 2 indexes per number
-	public float[] allocOutput() {
-		return new float[BIN_COUNT * 2];
+	public Complex[] allocOutput() {
+		Complex[] output = new Complex[BIN_COUNT];
+		Arrays.fill(output, new Complex());
+		return output;
 	}
 	
-	public void execute(float[] input, float[] output) {
+	public void execute(float[] input, Complex[] output) {
 		if (input.length != window.length) {
 			throw new IllegalArgumentException("NoteExtractor input size does not match the specified buffer size.");
 		}
@@ -95,8 +96,8 @@ public class NoteExtractor {
 			final int fHigh = fLow + 1;
 			
 			// Multiply all indexes by 2 because the output is complex and takes 2 indexes per number
-			output[2 * bin + REAL] = fftOutput[2 * fLow + REAL] + (frequency - fLow) * (fftOutput[2 * fHigh + REAL] - fftOutput[2 * fLow + REAL]);
-			output[2 * bin + IMAG] = fftOutput[2 * fLow + IMAG] + (frequency - fLow) * (fftOutput[2 * fHigh + IMAG] - fftOutput[2 * fLow + IMAG]);
+			output[bin].real = fftOutput[2 * fLow + REAL] + (frequency - fLow) * (fftOutput[2 * fHigh + REAL] - fftOutput[2 * fLow + REAL]);
+			output[bin].imag = fftOutput[2 * fLow + IMAG] + (frequency - fLow) * (fftOutput[2 * fHigh + IMAG] - fftOutput[2 * fLow + IMAG]);
 		}
 	}
 }

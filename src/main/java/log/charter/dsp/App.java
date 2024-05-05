@@ -1,14 +1,7 @@
 package log.charter.dsp;
 
-import static java.lang.Math.sqrt;
-
-import org.apache.commons.math3.complex.Complex;
-
 public class App 
-{
-	static final int REAL = 0;
-    static final int IMAG = 1;
-    
+{	
     public static void main( String[] args )
     {
 		//Sampling rate
@@ -31,12 +24,12 @@ public class App
 		NoteExtractor noteExtractor = new NoteExtractor(bufferSize, sampleRate);
 		
 		float[] frequencies = noteExtractor.frequencies();
-		float[] output = noteExtractor.allocOutput();
+		Complex[] output = noteExtractor.allocOutput();
 		
 		noteExtractor.execute(input, output);
 		
-		for (int bin = 0; bin < output.length / 2; ++bin) {
-		    float mag = (float)sqrt(output[2 * bin + REAL] * output[2 * bin + REAL] + output[2 * bin + IMAG] * output[2 * bin + IMAG]);
+		for (int bin = 0; bin < output.length; ++bin) {
+		    float mag = (float)Math.sqrt(output[bin].real * output[bin].real + output[bin].imag * output[bin].imag);
 		    System.out.println("BIN: " + bin + " Frequency: " + frequencies[bin] + ": " + mag);
 		}
 	}
