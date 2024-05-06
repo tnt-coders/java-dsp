@@ -62,7 +62,10 @@ public class NoteExtractor {
 	
 	public Complex[] allocOutput() {
 		Complex[] output = new Complex[BIN_COUNT];
-		Arrays.fill(output, new Complex());
+		for (int bin = 0; bin < output.length; ++bin) {
+			output[bin] = new Complex();
+		}
+		
 		return output;
 	}
 	
@@ -78,10 +81,6 @@ public class NoteExtractor {
 		}
 
 		fft.execute(fftInput, fftOutput);
-		
-//		for (int bin = 0; bin < fftOutput.length; ++bin) {
-//			System.out.println(fftOutput[bin].real);
-//		}
 		
 		// Interpolate the results to line up with musical notes
 		for (int bin = 0; bin < frequencyBins.length; ++bin) {
