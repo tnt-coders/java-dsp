@@ -3,9 +3,7 @@ package log.charter.dsp;
 import java.util.Arrays;
 
 public class NoteExtractor {
-	private static final int REAL = 0;
-	private static final int IMAG = 1;
-	
+
 	// Declare reference frequency of A4
 	private static final float A4 = 440f;
 	
@@ -25,9 +23,10 @@ public class NoteExtractor {
 	private final float[] frequencyBins = new float[BIN_COUNT];
 	
 	private final FourierTransform fft;
-	private final float[] window;
 	private final float[] fftInput;
-	private final float[] fftOutput;
+	private final Complex[] fftOutput;
+	
+	private final float[] window;
 	
 	NoteExtractor(final int bufferSize, final int sampleRate) { 
 		this(bufferSize, sampleRate, 0);
@@ -47,15 +46,14 @@ public class NoteExtractor {
 		// Initialize the FFT with a buffer size equal to the sample rate
 		// This makes the outputs precisely 1Hz apart and simplifies calculations
 		fft = new FourierTransform(sampleRate);
+		fftInput = fft.allocInput();
+		fftOutput = fft.allocOutput();
+		
+		// Initialize the FFT input (zero pad up to the sample rate)
+		Arrays.fill(fftInput, 0f);
 		
 		// Create a window
 		window = HammingWindow.generate(bufferSize);
-		
-		// Initialize the FFT input (zero pad up to the sample rate)
-		fftInput = new float[fft.inputSize()];
-		Arrays.fill(fftInput, 0f);
-		
-		fftOutput = new float[fft.outputSize()];
 	}
 	
 	public float[] frequencies() {
@@ -81,10 +79,9 @@ public class NoteExtractor {
 
 		fft.execute(fftInput, fftOutput);
 		
-		// Normalize the output
-		for (int i = 0; i < fftOutput.length; ++i) {
-			fftOutput[i] /= fftInput.length;
-		}
+//		for (int bin = 0; bin < fftOutput.length; ++bin) {
+//			System.out.println(fftOutput[bin].real);
+//		}
 		
 		// Interpolate the results to line up with musical notes
 		for (int bin = 0; bin < frequencyBins.length; ++bin) {
@@ -96,8 +93,8 @@ public class NoteExtractor {
 			final int fHigh = fLow + 1;
 			
 			// Multiply all indexes by 2 because the output is complex and takes 2 indexes per number
-			output[bin].real = fftOutput[2 * fLow + REAL] + (frequency - fLow) * (fftOutput[2 * fHigh + REAL] - fftOutput[2 * fLow + REAL]);
-			output[bin].imag = fftOutput[2 * fLow + IMAG] + (frequency - fLow) * (fftOutput[2 * fHigh + IMAG] - fftOutput[2 * fLow + IMAG]);
+			output[bin].real = fftOutput[fLow].real + (frequency - fLow) * (fftOutput[fHigh].real - fftOutput[fLow].real);
+			output[bin].imag = fftOutput[fLow].imag + (frequency - fLow) * (fftOutput[fHigh].imag - fftOutput[fLow].imag);
 		}
 	}
 }
